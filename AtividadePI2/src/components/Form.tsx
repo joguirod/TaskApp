@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { TaskContext, Task } from "../context/TaskContext";
-import Lista from "./Lista";
+import axios from 'axios';
 
 const Form: React.FC = () => {
     const { register, handleSubmit, reset } = useForm<{ title: string; description: string }>();
@@ -14,8 +14,19 @@ const Form: React.FC = () => {
     const { addTask } = taskContext;
 
     const onSubmit = (data: { title: string; description: string }) => {
-        addTask(new Task(data.title, data.description));
-        reset(); // Limpa os campos após adicionar
+        const newTask = new Task(data.title, data.description);
+
+        axios.post('http://localhost:8080/api/task', {
+            title: newTask.title,
+            description: newTask.description
+        })
+        .then(response => {
+            addTask(response.data);
+            reset();
+        })
+        .catch(error => {
+            console.error('Erro ao adicionar tarefa:', error);
+        });
     };
 
     return (
@@ -33,8 +44,6 @@ const Form: React.FC = () => {
                 />
                 <button type="submit">Adicionar</button>
             </form>
-
-            <Lista />
         </div>
     );
 };
