@@ -1,52 +1,42 @@
-import React, { useState } from 'react';
-import { useTaskContext } from '../context/TaskContext';
+import React, { useContext } from "react";
+import { useForm } from "react-hook-form";
+import { TaskContext, Task } from "../context/TaskContext";
+import Lista from "./Lista";
 
 const Form: React.FC = () => {
-  const { addTask, editTask, state } = useTaskContext();
-  const [task, setTask] = useState('');
-  const [description, setDescription] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentTaskIndex, setCurrentTaskIndex] = useState<number | null>(null);
+    const { register, handleSubmit, reset } = useForm<{ title: string; description: string }>();
+    const taskContext = useContext(TaskContext);
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!task) return;
-
-    if (isEditing && currentTaskIndex !== null) {
-      editTask(currentTaskIndex, { task, description });
-      setIsEditing(false);
-      setCurrentTaskIndex(null);
-    } else {
-      addTask({ task, description });
+    if (!taskContext) {
+        throw new Error("Form must be used within a TaskProvider");
     }
-    setTask('');
-    setDescription('');
-  };
 
-  const handleEditInit = (index: number) => {
-    setTask(state.todoList[index].task);
-    setDescription(state.todoList[index].description);
-    setIsEditing(true);
-    setCurrentTaskIndex(index);
-  };
+    const { addTask } = taskContext;
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Adicionar tarefa"
-        value={task}
-        onChange={(e) => setTask(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Adicionar descrição"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <button type="submit">{isEditing ? 'Confirmar Edição' : 'Adicionar'}</button>
-    </form>
-  );
+    const onSubmit = (data: { title: string; description: string }) => {
+        addTask(new Task(data.title, data.description));
+        reset(); // Limpa os campos após adicionar
+    };
+
+    return (
+        <div>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <input
+                    type="text"
+                    placeholder="Adicionar tarefa"
+                    {...register("title", { required: true })}
+                />
+                <input
+                    type="text"
+                    placeholder="Adicionar descrição"
+                    {...register("description")}
+                />
+                <button type="submit">Adicionar</button>
+            </form>
+
+            <Lista />
+        </div>
+    );
 };
 
 export default Form;

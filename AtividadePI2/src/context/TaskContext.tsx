@@ -1,8 +1,13 @@
 import React, { createContext, useReducer, useMemo, useCallback } from 'react';
 
-export interface Task {
+export class Task {
   task: string;
   description: string;
+
+  constructor(task: string, description: string) {
+    this.task = task;
+    this.description = description;
+  }
 }
 
 interface TaskState {
@@ -56,7 +61,7 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
   }
 }
 
-const TaskContext = createContext<{
+export const TaskContext = createContext<{
   state: TaskState;
   addTask: (task: Task) => void;
   editTask: (index: number, task: Task) => void;
